@@ -55,6 +55,8 @@ nb_hello_world <- function(lang = "English") {
 
 nb_list_topics <- function(scope = c("USER", "ORG", "GLOBAL", "ALL")) {
   
+  if (!exists(".auth", where = globalenv())) stop("Use nb_setup() to authenticate yourself!", call. = FALSE)
+  
   type <- match.arg(scope)
   
   result <- httr::GET(
@@ -75,6 +77,8 @@ nb_list_topics <- function(scope = c("USER", "ORG", "GLOBAL", "ALL")) {
 # output <- nb_list_topics("USER")
 
 nb_list_themes <- function(scope = c("USER", "ORG", "GLOBAL", "ALL")) {
+  
+  if (!exists(".auth", where = globalenv())) stop("Use nb_setup() to authenticate yourself!", call. = FALSE)
   
   type <- match.arg(scope)
   
@@ -98,6 +102,7 @@ nb_list_themes <- function(scope = c("USER", "ORG", "GLOBAL", "ALL")) {
 
 nb_topic_definitions <- function(topic_id) {
   
+  if (!exists(".auth", where = globalenv())) stop("Use nb_setup() to authenticate yourself!", call. = FALSE)
   stopifnot(length(topic_id) <= 100)
   
   url <- "https://api.netbase.com/cb/insight-api/2/topicDefinitions?"
@@ -126,6 +131,7 @@ nb_topic_definitions <- function(topic_id) {
 
 nb_theme_definitions <- function(theme_id) {
   
+  if (!exists(".auth", where = globalenv())) stop("Use nb_setup() to authenticate yourself!", call. = FALSE)
   stopifnot(length(theme_id) <= 100)
   
   url <- "https://api.netbase.com/cb/insight-api/2/themeDefinitions?"
@@ -162,6 +168,7 @@ nb_metric_values <- function(
   ...
 ) {
   
+  if (!exists(".auth", where = globalenv())) stop("Use nb_setup() to authenticate yourself!", call. = FALSE)
   stopifnot(length(topic_id) == 1)
   # https://nb360.netbase.com/Enterprise/Insight_API/input_parameters/metricSeries
   metric_choices <- c("TotalBuzz", "TotalBuzzPost", "TotalReplies", "TotalReposts", "OriginalPosts", "Impressions", "PositiveSentiment", "NegativeSentiment", "NeutralSentiment", "NetSentiment", "Passion", "UniqueAuthor", "StrongEmotion", "WeakEmotion", "EngagementDislikes", "EngagementLikes", "EngagementComments", "EngagementShares", "EngagementTotal", "EngagementRatio", "EngagementViews")
@@ -216,6 +223,7 @@ nb_insights_count <- function(
   ...
 ) {
   
+  if (!exists(".auth", where = globalenv())) stop("Use nb_setup() to authenticate yourself!", call. = FALSE)
   stopifnot(length(topic_id) == 1)
   #https://nb360.netbase.com/Enterprise/Insight_API/input_parameters/categories_(insightCount_Method)
   category_choices <- c("Likes", "Dislikes", "PositiveEmotions", "NegativeEmotions", "PositiveBehaviors", "NegativeBehaviors", "Authors", "Domains", "Sources", "Geolocation", "Languages", "Sentiment", "Phrases", "Hashtags", "OrgProducts", "People", "Things")
@@ -251,3 +259,4 @@ nb_insights_count <- function(
 }
 
 # output <- nb_insights_count(topic_id, size = 50)
+
