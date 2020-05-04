@@ -46,8 +46,8 @@ nb_hello_world <- function(lang = "English") {
     config = .auth
   )
   
-  stopifnot(status_code(result) == 200)
-  content(result)
+  stopifnot(httr::status_code(result) == 200)
+  httr::content(result)
 }
 
 # nb_hello_world("English")
@@ -65,7 +65,7 @@ nb_list_topics <- function(scope = c("USER", "ORG", "GLOBAL", "ALL")) {
     config = .auth
   )
   
-  stopifnot(status_code(result) == 200)
+  stopifnot(httr::status_code(result) == 200)
   
   content(result, type = "text", encoding = "UTF-8") %>%
     jsonlite::fromJSON() %>% 
@@ -88,7 +88,7 @@ nb_list_themes <- function(scope = c("USER", "ORG", "GLOBAL", "ALL")) {
     config = .auth
   )
   
-  stopifnot(status_code(result) == 200)
+  stopifnot(httr::status_code(result) == 200)
   
   content(result, type = "text", encoding = "UTF-8") %>%
     jsonlite::fromJSON() %>% 
@@ -98,7 +98,7 @@ nb_list_themes <- function(scope = c("USER", "ORG", "GLOBAL", "ALL")) {
   
 }
 
-#output <- nb_list_topics("ALL")
+# output <- nb_list_themes("ALL")
 
 nb_topic_definitions <- function(topic_id) {
   
@@ -114,20 +114,26 @@ nb_topic_definitions <- function(topic_id) {
     config = .auth
   )
   
-  stopifnot(status_code(result) == 200)
+  if (status_code(result) == 403) {
+    message("You have exceeded your query rate limit.\nWaiting for 30 seconds...")
+    Sys.sleep(30)
+    nb_topic_definitions(topic_id)
+  }
+  
+  stopifnot(httr::status_code(result) == 200)
   
   message("Success!")
   
   output <- content(result, type = "text", encoding = "UTF-8") %>% 
     jsonlite::fromJSON() %>% 
-    as_tibble() %>% 
-    select(name, topicId,  lastRunDate, brands, everything()) %>% 
-    select_if(col_selector) %>% ## remove empty or "all NA" cols
+    tibble::as_tibble() %>% 
+    dplyr::select(name, topicId,  lastRunDate, brands, everything()) %>% 
+    dplyr::select_if(col_selector) %>% ## remove empty or "all NA" cols
     dplyr::mutate_at(dplyr::vars(ends_with("Date")), lubridate::ymd_hms) 
   
 }
 
-# output <- nb_topic_definitions(index_topics)
+# output <- nb_topic_definitions(1417805)
 
 nb_theme_definitions <- function(theme_id) {
   
@@ -143,13 +149,19 @@ nb_theme_definitions <- function(theme_id) {
     config = .auth
   )
   
-  stopifnot(status_code(result) == 200)
+  if (status_code(result) == 403) {
+    message("You have exceeded your query rate limit.\nWaiting for 30 seconds...")
+    Sys.sleep(30)
+    nb_theme_definitions(theme_id)
+  }
+  
+  stopifnot(httr::status_code(result) == 200)
   
   content(result, type = "text", encoding = "UTF-8") %>% 
     jsonlite::fromJSON() %>% 
-    as_tibble() %>% 
-    select(name, themeId,  editedDate, everything()) %>% 
-    select_if(col_selector) %>%  ## remove empty or all NA cols
+    tibble::as_tibble() %>% 
+    dplyr::select(name, themeId,  editedDate, everything()) %>% 
+    dplyr::select_if(col_selector) %>%  ## remove empty or all NA cols
     dplyr::mutate_at(dplyr::vars(ends_with("Date")), lubridate::ymd_hms) 
   
 }
@@ -190,7 +202,7 @@ nb_metric_values <- function(
     nb_metric_values(topic_id, metricSeries, time, ...)
   }
   
-  stopifnot(status_code(result) == 200)
+  stopifnot(httr::status_code(result) == 200)
   
   message("Success!")
   
@@ -202,19 +214,17 @@ nb_metric_values <- function(
   date_df <- tibble(date = output$metrics$columns %>% pluck(1) %>% lubridate::ymd_hms())
   
   metrics_df <- output$metrics$dataset %>% 
-    pluck(1) %>% 
-    as_tibble() %>% 
-    pivot_wider(names_from = "seriesName", values_from = "set") %>% 
-    unnest(everything())
+    purrr::pluck(1) %>% 
+    tibble::as_tibble() %>% 
+    tidyr::pivot_wider(names_from = "seriesName", values_from = "set") %>% 
+    tidyr::unnest(everything())
   
   return(bind_cols(date_df, metrics_df))
 }
 
 # output <- nb_metric_values(topic_id = 1417805, time = "Month", metricSeries = "Impressions")
 # output <- nb_metric_values(topic_id = 1417805, time = "Day", metricSeries = "TotalBuzz", genders = "Female")
-
-# output <- nb_metric_values(topic_id = 1423897, time = "Day", metricSeries = "NetSentiment")
-
+# output <- nb_metric_values(topic_id = 1423897, time = "Week", metricSeries = c("TotalBuzz", "TotalBuzzPost", "TotalReplies", "TotalReposts", "OriginalPosts", "Impressions", "PositiveSentiment", "NegativeSentiment", "NeutralSentiment", "NetSentiment", "Passion", "UniqueAuthor", "StrongEmotion", "WeakEmotion", "EngagementDislikes", "EngagementLikes", "EngagementComments", "EngagementShares", "EngagementTotal", "EngagementRatio", "EngagementViews"))
 
 nb_insights_count <- function(
   topic_id,
@@ -244,19 +254,23 @@ nb_insights_count <- function(
     nb_insights_count(topic_id, categories, size, ...)
   }
   
-  stopifnot(status_code(result) == 200)
+  stopifnot(httr::status_code(result) == 200)
   
   obj <- content(result, as = "text") %>% 
     jsonlite::fromJSON() %>% 
-    pluck(1) %>% 
-    pluck("dataset") 
+    purrr::pluck(1) %>% 
+    purrr::pluck("dataset") 
   
-  output <- map(obj, ~ .x$set[[1]])
-  names(output) <- map_chr(obj, ~ .x$insightType)
+  output <- purrr::map(obj, ~ .x$set) %>% 
+    purrr::flatten()
   
+  names(output) <- purrr::map(obj, ~ .x$insightType) %>% 
+    purrr::flatten_chr()
+
   return(output)
   
 }
 
-# output <- nb_insights_count(topic_id, size = 50)
+# output <- nb_insights_count(topic_id = 1417805, categories = c("Likes", "Dislikes", "Phrases"), size = 20)
+# output <- nb_insights_count(topic_id = 1417805, size = 20, categories = c("Likes", "Dislikes", "PositiveEmotions", "NegativeEmotions", "PositiveBehaviors", "NegativeBehaviors", "Authors", "Domains", "Sources", "Geolocation", "Languages", "Sentiment", "Phrases", "Hashtags", "OrgProducts", "People", "Things"))
 
