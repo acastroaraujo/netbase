@@ -211,7 +211,7 @@ nb_metric_values <- function(
   output <- content(result, as = "text", encoding = "UTF-8") %>% 
     jsonlite::fromJSON() 
   
-  date_df <- tibble(date = output$metrics$columns %>% pluck(1) %>% lubridate::ymd_hms())
+  date_df <- tibble(date = output$metrics$columns %>% unlist() %>% lubridate::ymd_hms())
   
   metrics_df <- output$metrics$dataset %>% 
     purrr::pluck(1) %>% 
