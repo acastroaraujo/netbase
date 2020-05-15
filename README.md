@@ -8,7 +8,9 @@
 <!-- badges: end -->
 
 The goal of the **netbase** package is to make it easy to work with the
-Netbase API with R…
+Netbase API with R.
+
+It was created at TBWA\\Chiat\\Day.
 
 ## Installation
 

@@ -18,7 +18,9 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of the __netbase__ package is to make it easy to work with the Netbase API with R...
+The goal of the __netbase__ package is to make it easy to work with the Netbase API with R. 
+
+It was created at TBWA\\Chiat\\Day.
 
 ## Installation
 
