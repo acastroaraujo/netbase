@@ -6,6 +6,7 @@
 #' @param password password
 #'
 #' @return an object created by httr::authenticate() which gets stored invisibly in the global environment as `.auth`
+#' @export
 #'
 nb_setup <- function(user, password) {
   .auth <<- httr::authenticate(user, password)
@@ -157,22 +158,23 @@ nb_topic_definitions <- function(topic_id) {
   )
 
   if (httr::status_code(result) == 403) {
+
     message("You have exceeded your query rate limit.\nWaiting for 30 seconds...")
     Sys.sleep(30)
     nb_topic_definitions(topic_id)
+
+  } else {
+
+    stopifnot(httr::status_code(result) == 200)
+
+    output <- httr::content(result, type = "text", encoding = "UTF-8") %>%
+      jsonlite::fromJSON() %>%
+      tibble::as_tibble() %>%
+      dplyr::select(.data$name, .data$topicId,  .data$lastRunDate, .data$brands, dplyr::everything()) %>%
+      dplyr::select_if(col_selector) %>% ## remove empty or "all NA" cols
+      dplyr::mutate_at(dplyr::vars(dplyr::ends_with("Date")), lubridate::ymd_hms)
+
   }
-
-  stopifnot(httr::status_code(result) == 200)
-
-  message("Success!")
-
-  output <- httr::content(result, type = "text", encoding = "UTF-8") %>%
-    jsonlite::fromJSON() %>%
-    tibble::as_tibble() %>%
-    dplyr::select(.data$name, .data$topicId,  .data$lastRunDate, .data$brands, dplyr::everything()) %>%
-    dplyr::select_if(col_selector) %>% ## remove empty or "all NA" cols
-    dplyr::mutate_at(dplyr::vars(dplyr::ends_with("Date")), lubridate::ymd_hms)
-
 }
 
 
@@ -213,25 +215,39 @@ nb_theme_definitions <- function(theme_id) {
     config = .auth
   )
 
-  if (status_code(result) == 403) {
+  if (httr::status_code(result) == 403) {
+
     message("You have exceeded your query rate limit.\nWaiting for 30 seconds...")
     Sys.sleep(30)
     nb_theme_definitions(theme_id)
+
+  } else {
+
+    stopifnot(httr::status_code(result) == 200)
+
+    httr::content(result, type = "text", encoding = "UTF-8") %>%
+      jsonlite::fromJSON() %>%
+      tibble::as_tibble() %>%
+      dplyr::select(.data$name, .data$themeId, .data$editedDate, dplyr::everything()) %>%
+      dplyr::select_if(col_selector) %>%  ## remove empty or all NA cols
+      dplyr::mutate_at(dplyr::vars(dplyr::ends_with("Date")), lubridate::ymd_hms)
+
   }
-
-  stopifnot(httr::status_code(result) == 200)
-
-  httr::content(result, type = "text", encoding = "UTF-8") %>%
-    jsonlite::fromJSON() %>%
-    tibble::as_tibble() %>%
-    dplyr::select(.data$name, .data$themeId, .data$editedDate, dplyr::everything()) %>%
-    dplyr::select_if(col_selector) %>%  ## remove empty or all NA cols
-    dplyr::mutate_at(dplyr::vars(dplyr::ends_with("Date")), lubridate::ymd_hms)
-
 }
 
 
 #' Metric Values
+#'
+#' This function returns one or more metric values for sound bites matching the specified topic, depending on the `time` argument.
+#'
+#' If you exceed your rate limit, it will wait for 80 seconds before
+#' trying again, if this fails it will wait for 80 seconds before trying again,
+#' if this fails it will wait for 80 seconds before trying again, if this fails
+#' it will wait for 80 seconds before trying again, if this fails it will wait
+#' for 80 seconds before trying again, if this fails it will wait for 80 seconds
+#' before trying again, if this fails it will wait for 80 seconds before trying
+#' again, if this fails it will wait for 80 seconds before trying again, if this
+#' fails it will wait for 80 seconds before trying again...
 #'
 #' @param topic_id the topic id
 #' @param metricSeries one of "TotalBuzz", "TotalBuzzPost", "TotalReplies",
@@ -277,29 +293,29 @@ nb_metric_values <- function(
   )
 
   if (httr::status_code(result) == 403) {
-    message("You have exceeded your query rate limit.\nWaiting for 30 seconds...")
-    Sys.sleep(30)
+
+    message("You have exceeded your query rate limit.\nWaiting for 80 seconds...")
+    Sys.sleep(80)
     nb_metric_values(topic_id, metricSeries, time, ...)
+
+  } else {
+
+    stopifnot(httr::status_code(result) == 200)
+
+    output <- httr::content(result, as = "text", encoding = "UTF-8") %>%
+      jsonlite::fromJSON()
+
+    date_df <- tibble::tibble(date = output$metrics$columns %>% unlist() %>% lubridate::ymd_hms())
+
+    metrics_df <- output$metrics$dataset %>%
+      purrr::pluck(1) %>%
+      tibble::as_tibble() %>%
+      tidyr::pivot_wider(names_from = "seriesName", values_from = "set") %>%
+      tidyr::unnest(dplyr::everything())
+
+    return(dplyr::bind_cols(date_df, metrics_df))
+
   }
-
-  stopifnot(httr::status_code(result) == 200)
-
-  message("Success!")
-
-  ## data wrangling
-
-  output <- httr::content(result, as = "text", encoding = "UTF-8") %>%
-    jsonlite::fromJSON()
-
-  date_df <- tibble::tibble(date = output$metrics$columns %>% unlist() %>% lubridate::ymd_hms())
-
-  metrics_df <- output$metrics$dataset %>%
-    purrr::pluck(1) %>%
-    tibble::as_tibble() %>%
-    tidyr::pivot_wider(names_from = "seriesName", values_from = "set") %>%
-    tidyr::unnest(dplyr::everything())
-
-  return(dplyr::bind_cols(date_df, metrics_df))
 }
 
 #' Insight Count
@@ -308,12 +324,22 @@ nb_metric_values <- function(
 #' topic, the insight type specified with the categories parameter, and any
 #' other specified parameters
 #'
+#' If you exceed your rate limit, it will wait for 80 seconds before
+#' trying again, if this fails it will wait for 80 seconds before trying again,
+#' if this fails it will wait for 80 seconds before trying again, if this fails
+#' it will wait for 80 seconds before trying again, if this fails it will wait
+#' for 80 seconds before trying again, if this fails it will wait for 80 seconds
+#' before trying again, if this fails it will wait for 80 seconds before trying
+#' again, if this fails it will wait for 80 seconds before trying again, if this
+#' fails it will wait for 80 seconds before trying again, if this fails it will
+#' wait for 80 seconds before trying again...
+#'
 #' @param topic_id the topic id
 #' @param categories one or more from "Likes", "Dislikes", "PositiveEmotions", "NegativeEmotions", "PositiveBehaviors", "NegativeBehaviors", "Authors", "Domains", "Sources", "Geolocation", "Languages", "Sentiment", "Phrases", "Hashtags", "OrgProducts", "People", and "Things".
 #' @param size the number of insight values to return (default is 20)
 #' @param ... additional parameters. See here: https://nb360.netbase.com/Enterprise/Insight_API/methods/03_insightcount_method
 #'
-#' @return a `tibble`
+#' @return a list of `tibble`s, one for each category.
 #' @export
 #'
 #' @examples
@@ -321,6 +347,7 @@ nb_metric_values <- function(
 #' output <- nb_insights_count(topic_id = 1417805, categories = c("Likes", "Dislikes", "Phrases"), size = 20)
 #' output <- nb_insights_count(topic_id = 1417805, size = 20, categories = c("Likes", "Dislikes", "PositiveEmotions", "NegativeEmotions", "PositiveBehaviors", "NegativeBehaviors", "Authors", "Domains", "Sources", "Geolocation", "Languages", "Sentiment", "Phrases", "Hashtags", "OrgProducts", "People", "Things"))
 #' }
+#'
 nb_insights_count <- function(
   topic_id,
   categories = c("Likes", "Phrases"),
@@ -344,26 +371,29 @@ nb_insights_count <- function(
   )
 
   if (httr::status_code(result) == 403) {
-    message("You have exceeded your query rate limit.\nWaiting for 30 seconds...")
-    Sys.sleep(30)
+
+    message("You have exceeded your query rate limit.\nWaiting for 80 seconds...")
+    Sys.sleep(80)
     nb_insights_count(topic_id, categories, size, ...)
+
+  } else {
+
+    stopifnot(httr::status_code(result) == 200)
+
+    obj <- httr::content(result, as = "text") %>%
+      jsonlite::fromJSON() %>%
+      purrr::pluck(1) %>%
+      purrr::pluck("dataset")
+
+    output <- purrr::map(obj, ~ .x$set) %>%
+      purrr::flatten() %>%
+      purrr::map(~ dplyr::rename(.x, insight = .data$name, count = .data$value))
+
+    names(output) <- purrr::map(obj, ~ .x$insightType) %>%
+      purrr::flatten_chr()
+
+    return(output)
+
   }
-
-  stopifnot(httr::status_code(result) == 200)
-
-  obj <- httr::content(result, as = "text") %>%
-    jsonlite::fromJSON() %>%
-    purrr::pluck(1) %>%
-    purrr::pluck("dataset")
-
-  output <- purrr::map(obj, ~ .x$set) %>%
-    purrr::flatten()
-
-  names(output) <- purrr::map(obj, ~ .x$insightType) %>%
-    purrr::flatten_chr()
-
-  return(output)
-
 }
-
 

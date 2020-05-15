@@ -16,16 +16,28 @@ nb_insights_count(topic_id, categories = c("Likes", "Phrases"), size = 20, ...)
 \item{...}{additional parameters. See here: https://nb360.netbase.com/Enterprise/Insight_API/methods/03_insightcount_method}
 }
 \value{
-a \code{tibble}
+a list of \code{tibble}s, one for each category.
 }
 \description{
 This function returns the number of sound bites that match the specified
 topic, the insight type specified with the categories parameter, and any
 other specified parameters
 }
+\details{
+If you exceed your rate limit, it will wait for 80 seconds before
+trying again, if this fails it will wait for 80 seconds before trying again,
+if this fails it will wait for 80 seconds before trying again, if this fails
+it will wait for 80 seconds before trying again, if this fails it will wait
+for 80 seconds before trying again, if this fails it will wait for 80 seconds
+before trying again, if this fails it will wait for 80 seconds before trying
+again, if this fails it will wait for 80 seconds before trying again, if this
+fails it will wait for 80 seconds before trying again, if this fails it will
+wait for 80 seconds before trying again...
+}
 \examples{
 \dontrun{
 output <- nb_insights_count(topic_id = 1417805, categories = c("Likes", "Dislikes", "Phrases"), size = 20)
 output <- nb_insights_count(topic_id = 1417805, size = 20, categories = c("Likes", "Dislikes", "PositiveEmotions", "NegativeEmotions", "PositiveBehaviors", "NegativeBehaviors", "Authors", "Domains", "Sources", "Geolocation", "Languages", "Sentiment", "Phrases", "Hashtags", "OrgProducts", "People", "Things"))
 }
+
 }

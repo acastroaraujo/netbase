@@ -30,7 +30,17 @@ nb_metric_values(
 a \code{tibble}
 }
 \description{
-Metric Values
+This function returns one or more metric values for sound bites matching the specified topic, depending on the \code{time} argument.
+}
+\details{
+If you exceed your rate limit, it will wait for 80 seconds before
+trying again, if this fails it will wait for 80 seconds before trying again,
+if this fails it will wait for 80 seconds before trying again, if this fails
+it will wait for 80 seconds before trying again, if this fails it will wait
+for 80 seconds before trying again, if this fails it will wait for 80 seconds
+before trying again, if this fails it will wait for 80 seconds before trying
+again, if this fails it will wait for 80 seconds before trying again, if this
+fails it will wait for 80 seconds before trying again...
 }
 \examples{
 \dontrun{
