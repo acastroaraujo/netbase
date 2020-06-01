@@ -174,6 +174,8 @@ nb_topic_definitions <- function(topic_id) {
       dplyr::select_if(col_selector) %>% ## remove empty or "all NA" cols
       dplyr::mutate_at(dplyr::vars(dplyr::ends_with("Date")), lubridate::ymd_hms)
 
+    return(output)
+
   }
 }
 
@@ -225,12 +227,14 @@ nb_theme_definitions <- function(theme_id) {
 
     stopifnot(httr::status_code(result) == 200)
 
-    httr::content(result, type = "text", encoding = "UTF-8") %>%
+    output <- httr::content(result, type = "text", encoding = "UTF-8") %>%
       jsonlite::fromJSON() %>%
       tibble::as_tibble() %>%
       dplyr::select(.data$name, .data$themeId, .data$editedDate, dplyr::everything()) %>%
       dplyr::select_if(col_selector) %>%  ## remove empty or all NA cols
       dplyr::mutate_at(dplyr::vars(dplyr::ends_with("Date")), lubridate::ymd_hms)
+
+    return(output)
 
   }
 }
