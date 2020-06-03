@@ -261,7 +261,7 @@ nb_theme_definitions <- function(theme_id) {
 #'   "EngagementLikes", "EngagementComments", "EngagementShares",
 #'   "EngagementTotal", "EngagementRatio", and "EngagementViews"
 #' @param time one of "All", "Month", "Week", "Day", "Hour", "QuarterHour", "Minute"
-#' @param ... additional arguments. See here: https://nb360.netbase.com/Enterprise/Insight_API/methods/03_insightcount_method
+#' @param ... additional arguments. See here: https://nb360.netbase.com/Enterprise/Insight_API/methods/04_metricvalues_method
 #'
 #' @return a `tibble`
 #' @export
