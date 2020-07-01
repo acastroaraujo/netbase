@@ -1,4 +1,5 @@
 
+.auth <- NULL
 
 #' User authentication
 #'
@@ -9,7 +10,9 @@
 #' @export
 #'
 nb_setup <- function(user, password) {
+
   .auth <<- httr::authenticate(user, password)
+
 }
 
 
@@ -270,7 +273,7 @@ nb_theme_definitions <- function(theme_id) {
 #' \dontrun{
 #' output <- nb_metric_values(topic_id = 1417805, time = "Month", metricSeries = "Impressions")
 #' output <- nb_metric_values(topic_id = 1417805, time = "Day", metricSeries = "TotalBuzz", genders = "Female")
-#' output <- nb_metric_values(topic_id = 1423897, time = "Week", metricSeries = c("TotalBuzz", "TotalBuzzPost", "TotalReplies", "TotalReposts", "OriginalPosts", "Impressions", "PositiveSentiment", "NegativeSentiment", "NeutralSentiment", "NetSentiment", "Passion", "UniqueAuthor", "StrongEmotion", "WeakEmotion", "EngagementDislikes", "EngagementLikes", "EngagementComments", "EngagementShares", "EngagementTotal", "EngagementRatio", "EngagementViews"))
+#' output <- nb_metric_values(topic_id = 1423897, time = "Week", metricSeries = c("TotalBuzz", "TotalBuzzPost", "TotalReplies"))
 #' }
 
 nb_metric_values <- function(
@@ -349,7 +352,7 @@ nb_metric_values <- function(
 #' @examples
 #' \dontrun{
 #' output <- nb_insights_count(topic_id = 1417805, categories = c("Likes", "Dislikes", "Phrases"), size = 20)
-#' output <- nb_insights_count(topic_id = 1417805, size = 20, categories = c("Likes", "Dislikes", "PositiveEmotions", "NegativeEmotions", "PositiveBehaviors", "NegativeBehaviors", "Authors", "Domains", "Sources", "Geolocation", "Languages", "Sentiment", "Phrases", "Hashtags", "OrgProducts", "People", "Things"))
+#' output <- nb_insights_count(topic_id = 1417805, size = 20, categories = c("Likes", "Dislikes",  "Sentiment", "Phrases", "Hashtags", "OrgProducts", "People", "Things"))
 #' }
 #'
 nb_insights_count <- function(

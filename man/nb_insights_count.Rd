@@ -37,7 +37,7 @@ wait for 80 seconds before trying again...
 \examples{
 \dontrun{
 output <- nb_insights_count(topic_id = 1417805, categories = c("Likes", "Dislikes", "Phrases"), size = 20)
-output <- nb_insights_count(topic_id = 1417805, size = 20, categories = c("Likes", "Dislikes", "PositiveEmotions", "NegativeEmotions", "PositiveBehaviors", "NegativeBehaviors", "Authors", "Domains", "Sources", "Geolocation", "Languages", "Sentiment", "Phrases", "Hashtags", "OrgProducts", "People", "Things"))
+output <- nb_insights_count(topic_id = 1417805, size = 20, categories = c("Likes", "Dislikes",  "Sentiment", "Phrases", "Hashtags", "OrgProducts", "People", "Things"))
 }
 
 }

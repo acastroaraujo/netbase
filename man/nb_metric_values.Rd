@@ -24,7 +24,7 @@ nb_metric_values(
 
 \item{time}{one of "All", "Month", "Week", "Day", "Hour", "QuarterHour", "Minute"}
 
-\item{...}{additional arguments. See here: https://nb360.netbase.com/Enterprise/Insight_API/methods/03_insightcount_method}
+\item{...}{additional arguments. See here: https://nb360.netbase.com/Enterprise/Insight_API/methods/04_metricvalues_method}
 }
 \value{
 a \code{tibble}
@@ -46,6 +46,6 @@ fails it will wait for 80 seconds before trying again...
 \dontrun{
 output <- nb_metric_values(topic_id = 1417805, time = "Month", metricSeries = "Impressions")
 output <- nb_metric_values(topic_id = 1417805, time = "Day", metricSeries = "TotalBuzz", genders = "Female")
-output <- nb_metric_values(topic_id = 1423897, time = "Week", metricSeries = c("TotalBuzz", "TotalBuzzPost", "TotalReplies", "TotalReposts", "OriginalPosts", "Impressions", "PositiveSentiment", "NegativeSentiment", "NeutralSentiment", "NetSentiment", "Passion", "UniqueAuthor", "StrongEmotion", "WeakEmotion", "EngagementDislikes", "EngagementLikes", "EngagementComments", "EngagementShares", "EngagementTotal", "EngagementRatio", "EngagementViews"))
+output <- nb_metric_values(topic_id = 1423897, time = "Week", metricSeries = c("TotalBuzz", "TotalBuzzPost", "TotalReplies"))
 }
 }
